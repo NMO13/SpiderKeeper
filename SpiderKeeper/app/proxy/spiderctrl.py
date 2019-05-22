@@ -61,7 +61,7 @@ class SpiderServiceProxy(object):
     def deploy(self, *args, **kwargs):
         pass
 
-    def log_url(self, *args, **kwargs):
+    def get_log_url(self, *args, **kwargs):
         pass
 
     @property
@@ -97,7 +97,7 @@ class SpiderAgent():
 
     def sync_job_status(self, project):
         for spider_service_instance in self.spider_service_instances:
-            job_status = spider_service_instance.get_job_list(project.project_name)
+            job_status = spider_service_instance.get_job_list(project.project_name, project.id)
             job_execution_list = JobExecution.list_uncomplete_job()
             job_execution_dict = dict(
                 [(job_execution.service_job_execution_id, job_execution) for job_execution in job_execution_list])
@@ -121,9 +121,6 @@ class SpiderAgent():
     def start_spider(self, job_instance):
         project = Project.find_project_by_id(job_instance.project_id)
         spider_name = job_instance.spider_name
-        #arguments = {}
-        #if job_instance.spider_arguments:
-        #    arguments = dict(map(lambda x: x.split("="), job_instance.spider_arguments.split(",")))
         from collections import defaultdict
         arguments = defaultdict(list)
         if job_instance.spider_arguments:
@@ -174,12 +171,12 @@ class SpiderAgent():
                 return False
         return True
 
-    def log_url(self, job_execution):
+    def get_log_url(self, job_execution):
         job_instance = JobInstance.find_job_instance_by_id(job_execution.job_instance_id)
         project = Project.find_project_by_id(job_instance.project_id)
         for spider_service_instance in self.spider_service_instances:
             if spider_service_instance.server == job_execution.running_on:
-                return spider_service_instance.log_url(project.project_name, job_instance.spider_name,
+                return spider_service_instance.get_log_url(project.project_name, job_instance.spider_name,
                                                        job_execution.service_job_execution_id)
 
     @property

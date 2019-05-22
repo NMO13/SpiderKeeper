@@ -26,7 +26,7 @@ log.setLevel(logging.ERROR)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler = logging.StreamHandler()
 handler.setFormatter(formatter)
-app.logger.setLevel(app.config.get('LOG_LEVEL', "INFO"))
+app.logger.setLevel(app.config.get('LOG_LEVEL', "DEBUG"))
 app.logger.addHandler(handler)
 
 # swagger
@@ -85,6 +85,12 @@ def init_database():
     db.init_app(app)
     db.create_all()
 
+def clear_data():
+    meta = db.metadata
+    for table in reversed(meta.sorted_tables):
+        print('Clear table %s' % table)
+        db.session.execute(table.delete())
+    db.session.commit()
 
 # regist spider service proxy
 from SpiderKeeper.app.proxy.spiderctrl import SpiderAgent
@@ -123,6 +129,7 @@ def init_basic_auth():
 
 
 def initialize():
+    clear_data()
     init_database()
     regist_server()
     start_scheduler()

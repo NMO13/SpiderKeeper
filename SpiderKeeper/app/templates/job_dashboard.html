@@ -30,6 +30,7 @@
                 <th style="width: 10px">#</th>
                 <th style="width: 30px">Job</th>
                 <th style="width: 160px">Spider</th>
+                <th style="...">Job ID</th>
                 <th style="width: 100px">Args</th>
                 <th style="width: 40px">Priority</th>
                 <th style="width: 160px">Wait</th>
@@ -40,6 +41,7 @@
                 <td>{{ job.job_execution_id }}</td>
                 <td><a href="/project/1/job/periodic#{{ job.job_instance_id }}">{{ job.job_instance_id }}</a></td>
                 <td>{{ job.job_instance.spider_name }}</td>
+                <td>{{ job.service_job_execution_id }}</td>
                 <td class="txt-args" data-toggle="tooltip" data-placement="right"
                     title="{{ job.job_instance.spider_arguments }}">{{ job.job_instance.spider_arguments }}
                 </td>
@@ -83,6 +85,7 @@
                 <th style="width: 10px">#</th>
                 <th style="width: 30px">Job</th>
                 <th style="width: 160px">Spider</th>
+                <th style="...">Job ID</th>
                 <th style="width: 100px">Args</th>
                 <th style="width: 20px">Priority</th>
                 <th style="width: 40px">Runtime</th>
@@ -97,6 +100,7 @@
                 <td>{{ job.job_execution_id }}</td>
                 <td><a href="/project/1/job/periodic#{{ job.job_instance_id }}">{{ job.job_instance_id }}</a></td>
                 <td>{{ job.job_instance.spider_name }}</td>
+                <td>{{ job.service_job_execution_id }}</td>
                 <td class="txt-args" data-toggle="tooltip" data-placement="right"
                     title="{{ job.job_instance.spider_arguments }}">{{ job.job_instance.spider_arguments }}
                 </td>
@@ -149,6 +153,7 @@
                 <th style="width: 10px">#</th>
                 <th style="width: 30px">Job</th>
                 <th style="width: 160px">Spider</th>
+                <th style="...">Job ID</th>
                 <th style="width: 100px">Args</th>
                 <th style="width: 20px">Priority</th>
                 <th style="width: 40px">Runtime</th>
@@ -162,6 +167,7 @@
                 <td>{{ job.job_execution_id }}</td>
                 <td><a href="/project/1/job/periodic#{{ job.job_instance_id }}">{{ job.job_instance_id }}</a></td>
                 <td>{{ job.job_instance.spider_name }}</td>
+                <td>{{ job.service_job_execution_id }}</td>
                 <td class="txt-args" data-toggle="tooltip" data-placement="right"
                     title="{{ job.job_instance.spider_arguments }}">{{ job.job_instance.spider_arguments }}
                 </td>

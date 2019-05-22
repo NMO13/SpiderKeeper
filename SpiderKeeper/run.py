@@ -4,7 +4,6 @@ from optparse import OptionParser
 
 from SpiderKeeper.app import app, initialize
 
-
 def main():
     opts, args = parse_opts(app.config)
     app.config.update(dict(

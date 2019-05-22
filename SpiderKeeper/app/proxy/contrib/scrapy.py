@@ -48,13 +48,14 @@ class ScrapydProxy(SpiderServiceProxy):
     def get_daemon_status(self):
         pass
 
-    def get_job_list(self, project_name, spider_status=None):
+    def get_job_list(self, project_name, project_id, spider_status=None):
         data = request("get", self._scrapyd_url() + "/listjobs.json?project=%s" % project_name,
                        return_type="json")
         result = {SpiderStatus.PENDING: [], SpiderStatus.RUNNING: [], SpiderStatus.FINISHED: []}
         if data and data['status'] == 'ok':
             for _status in self.spider_status_name_dict.keys():
                 for item in data[self.spider_status_name_dict[_status]]:
+                    self.create_job_execution(item, project_id)
                     start_time, end_time = None, None
                     if item.get('start_time'):
                         start_time = datetime.datetime.strptime(item['start_time'], '%Y-%m-%d %H:%M:%S.%f')
@@ -62,6 +63,44 @@ class ScrapydProxy(SpiderServiceProxy):
                         end_time = datetime.datetime.strptime(item['end_time'], '%Y-%m-%d %H:%M:%S.%f')
                     result[_status].append(dict(id=item['id'], start_time=start_time, end_time=end_time))
         return result if not spider_status else result[spider_status]
+
+    def create_job_execution(self, job, project_id):
+        from SpiderKeeper.app.spider.model import JobExecution, JobInstance
+        from SpiderKeeper.app import agent
+        from SpiderKeeper.app import db
+
+        execution_id = job.get('id', 0)
+        if len(JobExecution.query.filter_by(service_job_execution_id=execution_id).all()) > 0:
+            return
+
+        job_instance = JobInstance()
+        job_instance.spider_name = job.get('spider', 'unknown')
+        job_instance.project_id = project_id
+        job_instance.spider_arguments = ''
+        job_instance.priority = 0
+        job_instance.run_type = 'periodic'
+        db.session.add(job_instance)
+        db.session.commit()
+
+        job_execution = JobExecution()
+        job_execution.project_id = project_id
+        job_execution.service_job_execution_id = execution_id
+        job_execution.job_instance_id = 0
+        job_execution.create_time = self.convert_time(job, 'start_time')
+        job_execution.end_time = self.convert_time(job, 'end_time')
+        job_execution.running_on = agent.spider_service_instances[0].server
+        job_execution.job_instance = job_instance
+        job_execution.job_instance_id = job_instance.id
+        db.session.add(job_execution)
+        db.session.commit()
+
+    def convert_time(self, job, position):
+        date = job.get(position, None)
+        if date:
+            res = datetime.datetime.strptime(date.split()[0], '%Y-%m-%d')
+        else:
+            res = datetime.datetime.now()
+        return res
 
     def start_spider(self, project_name, spider_name, arguments):
         post_data = dict(project=project_name, spider=spider_name)
@@ -84,5 +123,5 @@ class ScrapydProxy(SpiderServiceProxy):
         })
         return res.text if res.status_code == 200 else None
 
-    def log_url(self, project_name, spider_name, job_id):
+    def get_log_url(self, project_name, spider_name, job_id):
         return self._scrapyd_url() + '/logs/%s/%s/%s.log' % (project_name, spider_name, job_id)
