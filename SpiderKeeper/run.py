@@ -2,7 +2,7 @@ import logging
 import os
 from optparse import OptionParser
 
-from SpiderKeeper.app import app, initialize
+from SpiderKeeper.app import app, clear_data, initialize
 
 def main():
     opts, args = parse_opts(app.config)
@@ -16,6 +16,8 @@ def main():
     ))
     if opts.verbose:
         app.logger.setLevel(logging.DEBUG)
+    if opts.clear_db:
+        clear_data()
     initialize()
     app.logger.info("SpiderKeeper startd on %s:%s username:%s/password:%s with %s servers:%s" % (
         opts.host, opts.port, opts.username, opts.password, opts.server_type, ','.join(app.config.get('SERVERS', []))))
@@ -55,7 +57,6 @@ def parse_opts(config):
                       help='SpiderKeeper metadata database default: %s' % config.get('SQLALCHEMY_DATABASE_URI'),
                       dest='database_url',
                       default=config.get('SQLALCHEMY_DATABASE_URI'))
-
     parser.add_option("--no-auth",
                       help="disable basic auth",
                       dest='no_auth',
@@ -64,6 +65,9 @@ def parse_opts(config):
                       help="log level",
                       dest='verbose',
                       action='store_true')
+    parser.add_option("--clear-db",
+                      help="reinitialize the database",
+                      action="store_true")
     return parser.parse_args()
 
 

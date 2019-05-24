@@ -129,7 +129,6 @@ def init_basic_auth():
 
 
 def initialize():
-    clear_data()
     init_database()
     regist_server()
     start_scheduler()
