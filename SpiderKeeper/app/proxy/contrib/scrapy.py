@@ -55,6 +55,7 @@ class ScrapydProxy(SpiderServiceProxy):
         if data and data['status'] == 'ok':
             for _status in self.spider_status_name_dict.keys():
                 for item in data[self.spider_status_name_dict[_status]]:
+                    # create a new job execution for newly discovered spiders
                     self.create_job_execution(item, project_id)
                     start_time, end_time = None, None
                     if item.get('start_time'):
@@ -65,12 +66,13 @@ class ScrapydProxy(SpiderServiceProxy):
         return result if not spider_status else result[spider_status]
 
     def create_job_execution(self, job, project_id):
-        from SpiderKeeper.app.spider.model import JobExecution, JobInstance
+        from SpiderKeeper.app.spider.model import JobExecution, JobInstance, JobRunType
         from SpiderKeeper.app import agent
         from SpiderKeeper.app import db
 
         execution_id = job.get('id', 0)
-        if len(JobExecution.query.filter_by(service_job_execution_id=execution_id).all()) > 0:
+
+        if JobExecution.query.filter_by(service_job_execution_id = execution_id).first():
             return
 
         job_instance = JobInstance()
@@ -78,7 +80,7 @@ class ScrapydProxy(SpiderServiceProxy):
         job_instance.project_id = project_id
         job_instance.spider_arguments = ''
         job_instance.priority = 0
-        job_instance.run_type = 'periodic'
+        job_instance.run_type = JobRunType.ONETIME
         db.session.add(job_instance)
         db.session.commit()
 
